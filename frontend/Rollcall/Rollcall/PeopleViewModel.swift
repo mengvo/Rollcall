@@ -24,7 +24,6 @@ class PeopleViewModel: ObservableObject {
                 .select()
                 .execute()
                 .value
-            print(response)
             people = response
         } catch {
             errorMessage = error.localizedDescription

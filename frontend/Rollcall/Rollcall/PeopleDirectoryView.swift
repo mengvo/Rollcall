@@ -37,7 +37,7 @@ struct PeopleDirectoryView: View {
             List {
                 ForEach(viewModel.people, id: \.id) { person in
                     HStack(spacing: 14) {
-                        AsyncImage(url: URL(string: person.imageUrl ?? "")) { phase in
+                        AsyncImage(url: imageURL(for: person)) { phase in
                             switch phase {
                             case .success(let image):
                                 image
@@ -75,5 +75,10 @@ struct PeopleDirectoryView: View {
                     .fontWeight(.bold)
                     .foregroundColor(.white)
             )
+    }
+    
+    private func imageURL(for person: Person) -> URL? {
+        guard let imageUrl = person.imageUrl else { return nil }
+        return URL(string: "https://bnmvdnswrhkglqcghjrr.supabase.co/storage/v1/object/public/face/\(imageUrl)")
     }
 }

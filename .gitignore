@@ -26,3 +26,5 @@ DerivedData/
 
 ## macOS junk
 .DS_Store
+.vscode/settings.json
+frontend/Rollcall/Rollcall.xcodeproj/project.xcworkspace/xcuserdata/kingmengzhen.xcuserdatad/UserInterfaceState.xcuserstate
