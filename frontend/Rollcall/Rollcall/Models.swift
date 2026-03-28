@@ -31,6 +31,7 @@ struct Person: Identifiable, Codable {
     let firstName: String
     let lastName: String
     let imageUrl: String?
+    var seen: Bool = false
 
     enum CodingKeys: String, CodingKey {
         case id

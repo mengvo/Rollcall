@@ -5,6 +5,7 @@ struct ContentView: View {
     @StateObject private var cameraManager = CameraManager()
     @State private var identifiedPeople: [IdentifiedPerson] = []
     @State private var isProcessing = false
+    @ObservedObject var peopleViewModel: PeopleViewModel
 
     // Enroll state
     @State private var showEnrollSheet = false
@@ -150,15 +151,19 @@ struct ContentView: View {
                     isProcessing = false
                     switch result {
                     case .success(let json):
-                        if let firstName = json["first_name"] as? String,
+                        if let id = json["id"] as? Int,
+                           let firstName = json["first_name"] as? String,
                            let lastName = json["last_name"] as? String,
                            let similarity = json["similarity"] as? Double {
                             let person = IdentifiedPerson(
-                                id: String(json["id"] as? Int ?? 0),
+                                id: String(id),
                                 name: "\(firstName) \(lastName)",
                                 confidence: similarity
                             )
                             identifiedPeople = [person]
+                            
+                            // Mark as seen in the directory
+                            peopleViewModel.markSeen(id: id)
                         }
                     case .failure(let error):
                         print("ID failed: \(error)")

@@ -1,12 +1,21 @@
 import SwiftUI
 
+import SwiftUI
+
 struct PeopleDirectoryView: View {
-    @StateObject private var viewModel = PeopleViewModel()
+    @ObservedObject var viewModel: PeopleViewModel
 
     var body: some View {
         NavigationStack {
             content
                 .navigationTitle("People")
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Text("\(viewModel.seenCount)/\(viewModel.totalCount) seen")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
                 .task {
                     await viewModel.fetchPeople()
                 }
@@ -19,17 +28,6 @@ struct PeopleDirectoryView: View {
             Spacer()
             ProgressView("Loading...")
             Spacer()
-        } else if let error = viewModel.errorMessage {
-            VStack(spacing: 12) {
-                Text("Something went wrong")
-                    .font(.headline)
-                Text(error)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Button("Retry") {
-                    Task { await viewModel.fetchPeople() }
-                }
-            }
         } else if viewModel.people.isEmpty {
             Text("No people found")
                 .foregroundColor(.secondary)
@@ -53,16 +51,43 @@ struct PeopleDirectoryView: View {
                         }
                         .frame(width: 50, height: 50)
                         .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(person.seen ? Color.green : Color.clear, lineWidth: 3)
+                        )
 
-                        Text("\(person.firstName) \(person.lastName)")
-                                        .font(.body)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(person.firstName) \(person.lastName)")
+                                .font(.body)
+                            Text(person.seen ? "Seen" : "Not seen")
+                                .font(.caption)
+                                .foregroundColor(person.seen ? .green : .secondary)
+                        }
 
                         Spacer()
+
+                        if person.seen {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                        }
                     }
                     .padding(.vertical, 4)
                 }
+                .onDelete { indexSet in
+                    for index in indexSet {
+                        let person = viewModel.people[index]
+                        Task {
+                            await viewModel.deletePerson(id: person.id)
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private func imageURL(for person: Person) -> URL? {
+        guard let imageUrl = person.imageUrl else { return nil }
+        return URL(string: "https://bnmvdnswrhkglqcghjrr.supabase.co/storage/v1/object/public/face/\(imageUrl)")
     }
 
     private func placeholderAvatar(for person: Person) -> some View {
@@ -75,10 +100,5 @@ struct PeopleDirectoryView: View {
                     .fontWeight(.bold)
                     .foregroundColor(.white)
             )
-    }
-    
-    private func imageURL(for person: Person) -> URL? {
-        guard let imageUrl = person.imageUrl else { return nil }
-        return URL(string: "https://bnmvdnswrhkglqcghjrr.supabase.co/storage/v1/object/public/face/\(imageUrl)")
     }
 }

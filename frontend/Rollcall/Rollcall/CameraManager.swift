@@ -1,5 +1,3 @@
-// CameraManager.swift
-
 import AVFoundation
 import Vision
 import SwiftUI
@@ -29,6 +27,13 @@ class CameraManager: NSObject, ObservableObject {
         if session.canAddOutput(videoOutput) {
             session.addOutput(videoOutput)
             videoOutput.setSampleBufferDelegate(self, queue: processingQueue)
+            
+            // Set video orientation to portrait so frames match screen orientation
+            if let connection = videoOutput.connection(with: .video) {
+                if connection.isVideoOrientationSupported {
+                    connection.videoOrientation = .portrait
+                }
+            }
         }
 
         session.commitConfiguration()
@@ -58,7 +63,8 @@ extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
             }
         }
 
-        try? VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:]).perform([request])
+        // Tell Vision the image is in portrait-up orientation
+        try? VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:]).perform([request])
     }
 }
 
