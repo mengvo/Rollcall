@@ -1,17 +1,28 @@
-//
-//  RollcallApp.swift
-//  Rollcall
-//
-//  Created by Mengzhen Vo on 3/28/26.
-//
-
 import SwiftUI
 
 @main
 struct RollcallApp: App {
+    @StateObject private var authManager = AuthManager()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if authManager.isAuthenticated {
+                TabView {
+                    ContentView(authManager: authManager)
+                        .tabItem {
+                            Image(systemName: "camera.fill")
+                            Text("Scan")
+                        }
+
+                    PeopleDirectoryView()
+                        .tabItem {
+                            Image(systemName: "person.3.fill")
+                            Text("People")
+                        }
+                }
+            } else {
+                AuthView(authManager: authManager)
+            }
         }
     }
 }

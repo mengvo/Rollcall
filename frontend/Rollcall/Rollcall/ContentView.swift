@@ -1,24 +1,35 @@
-// ContentView.swift
-
 import SwiftUI
 
 struct ContentView: View {
+    @ObservedObject var authManager: AuthManager
     @StateObject private var cameraManager = CameraManager()
     @State private var identifiedPeople: [IdentifiedPerson] = []
     @State private var isProcessing = false
 
     var body: some View {
         ZStack {
-            // Camera feed fills the screen
             CameraPreviewView(session: cameraManager.session)
                 .ignoresSafeArea()
 
-            // Face bounding boxes overlay
             FaceOverlayView(faces: cameraManager.detectedFaces)
                 .ignoresSafeArea()
 
-            // Results panel at the bottom
             VStack {
+                // Sign out button top-right
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        Task { await authManager.signOut() }
+                    }) {
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                            .foregroundColor(.white)
+                            .padding(12)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Circle())
+                    }
+                    .padding()
+                }
+
                 Spacer()
 
                 if !identifiedPeople.isEmpty {
@@ -26,7 +37,6 @@ struct ContentView: View {
                         .transition(.move(edge: .bottom))
                 }
 
-                // Capture button
                 HStack {
                     Button(action: captureAndIdentify) {
                         Circle()
