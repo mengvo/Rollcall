@@ -8,7 +8,7 @@ struct RollcallApp: App {
         WindowGroup {
             if authManager.isAuthenticated {
                 TabView {
-                    ContentView(authManager: authManager)
+                    MatchView(authManager: authManager)
                         .tabItem {
                             Image(systemName: "camera.fill")
                             Text("Scan")
