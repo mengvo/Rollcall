@@ -3,7 +3,7 @@ import UIKit
 class APIService {
     static let shared = APIService()
 
-    private let baseURL = "http://10.23.20.199:8000"
+    private let baseURL = "https://rollcall-api-569551756474.us-east4.run.app"
 
     func matchFace(image: UIImage, completion: @escaping (Result<[String: Any], Error>) -> Void) {
         guard let url = URL(string: "\(baseURL)/match"),
