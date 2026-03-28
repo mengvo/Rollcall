@@ -1,33 +1,25 @@
-// APIService.swift
-
 import UIKit
 
 class APIService {
     static let shared = APIService()
 
-    // Change this to your actual backend URL
-    private let baseURL = "http://127.0.0.1:8000"
+    private let baseURL = "http://10.23.20.199:8000"
 
-    func identifyFaces(in image: UIImage, completion: @escaping (Result<[IdentifiedPerson], Error>) -> Void) {
-        guard let url = URL(string: "\(baseURL)/identify"),
+    func matchFace(image: UIImage, completion: @escaping (Result<[String: Any], Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/match"),
               let imageData = image.jpegData(compressionQuality: 0.8) else {
             completion(.failure(URLError(.badURL)))
             return
         }
 
+        let base64String = imageData.base64EncodedString()
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let boundary = UUID().uuidString
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-
-        var body = Data()
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"image\"; filename=\"capture.jpg\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
-        body.append(imageData)
-        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
-        request.httpBody = body
+        let body: [String: String] = ["img_base64": base64String]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
         URLSession.shared.dataTask(with: request) { data, _, error in
             if let error = error {
@@ -39,10 +31,41 @@ class APIService {
                 return
             }
             do {
-                let people = try JSONDecoder().decode([IdentifiedPerson].self, from: data)
-                completion(.success(people))
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    completion(.success(json))
+                }
             } catch {
                 completion(.failure(error))
+            }
+        }.resume()
+    }
+    
+    func enrollPerson(firstName: String, lastName: String, imageBase64: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/enroll") else {
+            completion(.failure(URLError(.badURL)))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: String] = [
+            "first_name": firstName,
+            "last_name": lastName,
+            "img_base64": imageBase64
+        ]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                completion(.success(true))
+            } else {
+                completion(.failure(URLError(.badServerResponse)))
             }
         }.resume()
     }
