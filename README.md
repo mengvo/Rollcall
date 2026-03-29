@@ -1,5 +1,7 @@
 # Rollcall
 
+Link to demo: https://youtu.be/pEt8BsatVnE?si=84UWw8no-y5CECaw
+
 ## Inspiration
 
 Identity verification is a gatekeeping problem that affects some of the most vulnerable populations. Unhoused individuals are routinely turned away from shelters and services because they lack government-issued ID. Elder care facilities struggle to track residents with cognitive decline who wander. In disaster scenarios, separated families have no fast way to locate each other across shelters. And in everyday settings like schools, manual attendance still eats up instructional time — time that disproportionately impacts under-resourced classrooms where every minute counts.
